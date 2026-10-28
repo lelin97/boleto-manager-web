@@ -1,37 +1,57 @@
+# Boleto Manager — Web
 
-Readme: Mockup Front-End de CRUD de Boleto
+> Technical challenge built for a job application process. Shared here as a code sample.
 
-Este repositório contém um mockup de interface de usuário (front-end) para um sistema de CRUD (Criar, Ler, Atualizar e Excluir) de boletos. 
-Tecnologias utilizadas: 
+Front-end for managing **boletos** (Brazilian bank payment slips): register, list, view, edit and delete them, and mark one or many as paid at once. It consumes the REST API in [boleto-manager-api](https://github.com/lelin97/boleto-manager-api).
 
-`React.js` 
-`zustand` 
-`MUI` 
-`Zod`
+## The challenge
 
-Funcionalidades:
+Build a full CRUD for boletos, with a front-end and a back-end. Each boleto has a description, due date, amount, late fee and interest, and can be marked as paid ("baixa", in Brazilian finance terms).
 
-Listagem de boletos:
-Exibe uma lista com todos os boletos cadastrados.
+## What was delivered
 
-Possui um botão para criar um novo boleto.
-Criação de boleto:
+- **Boleto list** in a data grid with amount, late fee, due date and a pending/paid status
+- **Bulk payment:** select several pending boletos and mark them all as paid in one action (paid ones can't be selected again)
+- **Create and edit** form with validation and currency inputs in BRL
+- **Detail view** with every field of the boleto, including total amount and payment date
+- **Delete** with feedback messages
+- Global loading screen and alert system shared across the app
 
-Permite cadastrar um novo boleto, informando data de vencimento, valor, etc.
+## Tech stack
 
-Visualização de boleto:
-Exibe todas as informações de um boleto selecionado.
+React 18 · TypeScript · Vite · Material UI · AG Grid · React Hook Form · Zod · Zustand · Axios · React Router · date-fns
 
-Possui botões para editar ou excluir o boleto.
+## Getting started
 
-Edição de boleto:
-Permite editar as informações de um boleto selecionado.
+This app needs the API running. Start [boleto-manager-api](https://github.com/lelin97/boleto-manager-api) first, which listens on port 4050 by default.
 
-Como usar:
+**Requirements:** Node.js 18 (see `.nvmrc`) and yarn.
 
-Clone este repositório para o seu computador.
+```bash
+yarn
+yarn dev
+```
 
-Execute o comando `yarn`
+The API address is set in `.env.development` as `VITE_HOST` (default `http://localhost:4050`).
 
-Execute o comando `yarn dev`
-Utilize as funcionalidades disponíveis para testar o mockup.
+## Project structure
+
+- **`src/pages/PayCheck`** — List, create/edit form, detail view and the Zod validation schema
+- **`src/services`** — Axios instance, a typed `api` wrapper (`get`, `post`, `put`, `delete`) and one module per endpoint in `Endpoints/PayChecks`
+- **`src/shared/components`** — Layout, app bar, sidebar, data grid, pop-up, alert and loading screen
+- **`src/shared/contexts`** — Zustand stores for the loading screen and alerts, plus the MUI theme provider
+- **`src/types`** — Shared types, including the `RetornoDB<T>` response contract
+
+## Design decisions
+
+- **A single response contract:** every request goes through one wrapper that returns `RetornoDB<T>`, a typed union of success (`data`) or failure (`mensagem`, `erro`). Network errors are normalized into the same shape, so screens never deal with raw Axios errors.
+- **One module per endpoint:** each operation (list, create, update, delete, mark as paid) lives in its own file with optional success and error callbacks, keeping screens free of HTTP details.
+- **Zustand for cross-cutting UI state:** the loading screen and alerts are small global stores that can be triggered from anywhere, including the API layer, without wrapping the app in extra providers.
+- **Zod coercion for money fields:** amount, late fee and interest come from text inputs and are validated and converted to numbers in the schema itself.
+
+## With more time, I would add
+
+- Component and integration tests with Jest and React Testing Library
+- Filters and search on the list (by status, due date or description)
+- Automatic calculation of late fee and interest based on the due date
+- Authentication, so the user recorded on each action comes from a real login
